@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const { productsModel } = require('../models/index.js')
 
 router.get('/', (req, res) => {
   res.send('查询商品')
@@ -7,11 +8,9 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   const { title, price, img, brand, address } = req.body
-  // 连接mongoDB服务器
-  const mongoose = require('mongoose')
-  mongoose.connect('mongodb://localhost:27017/myshop', { useNewUrlParser: true, useUnifiedTopology: true})
 
-  // 创建model
+
+/*   // 创建model
   const Product = mongoose.model('product', {
     title: String,
     price: Number,
@@ -19,10 +18,10 @@ router.post('/', (req, res) => {
     brand: String,
     address: String,
     createdAt: Number
-  })
+  }) */
 
   // 创建实例
-  const myProduct = new Product({
+  const myProduct = new productsModel({
     title, price, img, brand, address,
     createdAt: Date.now()
   })
@@ -41,11 +40,35 @@ router.post('/', (req, res) => {
   })
 })
 
+// 修改update操作
 router.put('/', (req, res) => {
-  res.send('修改商品')
+  const {_id, title, price, img, brand, address } = req.body
+  productsModel.update({ _id }, {title, price,img, brand, address, createdAt: Date.now()}).then( successData => {
+    res.json({
+      code: 200,
+      data: {...successData, message: '更新成功！'}
+    })
+  }).catch(err => {
+    res.json({
+      code: 400,
+      data: err.message
+    })
+  })
 })
 
-router.delete('/', (req, res) => {
-  res.send('删除商品')
+// 删除
+router.delete('/:_id', (req, res) => {
+  const { _id } = req.params
+  productsModel.remove({ _id }).then(successData => {
+    res.json({
+      code: 200,
+      data: { ...successData, message: '删除成功！' }
+    })
+  }).catch(err => {
+    res.json({
+      code: 400,
+      data: err.message
+    })
+  })
 })
 module.exports = router
