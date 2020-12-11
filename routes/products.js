@@ -6,7 +6,39 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  res.send('新增商品')
+  const { title, price, img, brand, address } = req.body
+  // 连接mongoDB服务器
+  const mongoose = require('mongoose')
+  mongoose.connect('mongodb://localhost:27017/myshop', { useNewUrlParser: true, useUnifiedTopology: true})
+
+  // 创建model
+  const Product = mongoose.model('product', {
+    title: String,
+    price: Number,
+    img: String,
+    brand: String,
+    address: String,
+    createdAt: Number
+  })
+
+  // 创建实例
+  const myProduct = new Product({
+    title, price, img, brand, address,
+    createdAt: Date.now()
+  })
+  
+  // save方法保存实例
+  myProduct.save().then(successData => {
+    res.json({
+      code: 200,
+      data: successData
+    })
+  }).catch(err => {
+    res.json({
+      code:400,
+      data:err
+    })
+  })
 })
 
 router.put('/', (req, res) => {
