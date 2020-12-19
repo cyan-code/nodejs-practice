@@ -2,8 +2,35 @@ const express = require('express')
 const router = express.Router()
 const { productsModel } = require('../models/index.js')
 
-router.get('/', (req, res) => {
-  res.send('查询商品')
+router.get('/:_id?', (req, res) => {
+  const { _id } = req.params
+  if (_id) {
+    productsModel.findById(_id).then(successData => {
+      res.json({
+        code: 200,
+        data: successData
+      }).catch(err => {
+        res.json({
+          code: 400,
+          data: err.message
+        })
+      })
+    })
+  } else {
+    // 解构赋值默认值，如果没有查询字符串返回第1页，5条数据
+    const { page = 1, pageSize = 5 } = req.query 
+    productsModel.find().limit(parseInt(pageSize)).skip((page - 1) * pageSize).then(successData => {
+      res.json({
+        code: 200,
+        data: successData
+      })
+    }).catch(err => {
+      res.json({
+        code: 400,
+        data: err.message
+      })
+    })
+  }
 })
 
 router.post('/', (req, res) => {
